@@ -12,6 +12,8 @@
 | 22/505433/TK/55309         | Dhimas Nurhanindya Putra                  |
 
 # Note:
-### setelah clone repo, jangan lupa untuk bikin branch sendiri dengan nama kalian masing-masing dan ketik npm i di terminal.
-### kalo udah pull request, ngomong di grup.
+### setelah clone repo, ketik `npm i` di terminal.
+### jangan lupa untuk bikin local branch dengan nama kalian masing-masing.
+### selalu push ke remote branch.
+### kalo mau pull request, ngomong di grup.
 ### kalo ada error, etc ngomong langsung aja di grup.
