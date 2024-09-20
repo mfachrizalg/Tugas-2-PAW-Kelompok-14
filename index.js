@@ -1,7 +1,7 @@
 const {connectDB} = require("./src/configs/db");
 const express = require("express");
 const cookieParser = require("cookie-parser");
-
+const mongoose = require("mongoose");
 
 const app = express();
 
@@ -9,12 +9,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 connectDB();
-if (connectDB) {
-  console.log("MongoDB Connected");
-  const PORT = 3500;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+
+app.use('/book', require('./src/routers/bookRouter'))
+
+mongoose.connection.once("open", () => {
+  console.log("Connected to MongoDB");
+  app.listen(3000, () => {
+    console.log("Server is running on port 3000");
   });
-} else {
-    console.log("MongoDB Connection Failed");
-}
+});
+mongoose.connection.on("error", (err) => {
+  console.log(err);
+});
