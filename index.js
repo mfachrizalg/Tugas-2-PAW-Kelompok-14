@@ -11,6 +11,7 @@ app.use(cookieParser());
 connectDB();
 
 app.use('/book', require('./src/routers/bookRouter'))
+app.use('/feedback', require('./src/routers/feedbackRouter'))
 
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
