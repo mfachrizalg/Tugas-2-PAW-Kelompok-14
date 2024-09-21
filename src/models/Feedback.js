@@ -9,12 +9,12 @@ const FeedbackSchema = new mongoose.Schema({
         type : Number,
         required : true
     },
-    user : {
+    userId : {
         type : mongoose.Schema.Types.ObjectId,
         ref : 'User'
     },
-    book : {
-        type : mongoose.Schema.Types.ObjectId,
+    bookId : {
+        type : mongoose.Schema.Types.String,
         ref : 'Book'
     }
 },
