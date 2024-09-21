@@ -1,42 +1,55 @@
 const axios = require('axios');
+const Book = require('../models/Book');
+const mongoose = require('mongoose');
 
 exports.getBooks = async (req, res) => {
-    const title = req.query.title
-    axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`)
-        .then((results) => {
-            // parse results:
-            results = JSON.parse(JSON.stringify(results.data));
+    let session;
+    let title = req.query.title;
+    if (!title) return res.status(400).json({ message: 'Title is required' });
+    title = title.replace(' ', '+');
+    try {
+        session = await mongoose.startSession();
+        session.startTransaction();
 
-            // returned books:
-            let foundBooks = results.items;
+        const { data } = await axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`);
+        if (data.totalItems === 0) return res.status(404).json({ message: 'Books not found' });
 
-            // cut results down to 10 in case there are more than 10 results:
-            if (foundBooks.length > 5) foundBooks = foundBooks.slice(0, 5);
-
-            // booksDto (books data transfer object) is what is returned to the frontend:
-            let booksDto = [];
-
-            // for each book in foundBooks
-            for (let book of foundBooks) {
-                // add the details to the booksDto if they exist, otherwise 0 or ''
-                booksDto.push({
-                    title: (book.volumeInfo.title ? book.volumeInfo.title : ''),
-                    authors: ((book.volumeInfo.authors && book.volumeInfo.authors[0]) ? book.volumeInfo.authors : ''),
-                    genre: ((book.volumeInfo.categories && book.volumeInfo.categories[0]) ? book.volumeInfo.categories[0] : ''),
-                    description: (book.volumeInfo.description ? book.volumeInfo.description : ''),
-                    isbn: ((book.volumeInfo.industryIdentifiers && book.volumeInfo.industryIdentifiers[0].identifier) ? book.volumeInfo.industryIdentifiers[0].identifier : 0),
-                    thumbnailUrl: ((book.volumeInfo.imageLinks && book.volumeInfo.imageLinks.thumbnail) ? book.volumeInfo.imageLinks.thumbnail : 'http://books.google.com/books/content?id=rbQ4MAEACAAJ&printsec=frontcover&img=1&zoom=3&source=gbs_api')
-                });
-            }
-
-            // return the info to the user
-            res.status(200).json({
-                count: booksDto.length, // total number of books returned
-                books: booksDto
-            });
-        })
-        // catch any errors
-        .catch((error) => {
-            res.status(500).json(error.message)
+        const bulkOperations = data.items.map(book => {
+            return {
+                updateOne: {
+                    filter: { _id: book.id },
+                    update: {
+                        $set: {
+                            title: book.volumeInfo.title || ' ',
+                            authors: book.volumeInfo.authors || [' '],
+                            publisher: book.volumeInfo.publisher || ' ',
+                            publishedDate: book.volumeInfo.publishedDate || ' ',
+                            description: book.volumeInfo.description || ' ',
+                            image: book.volumeInfo.imageLinks?.thumbnail || 'http://books.google.com/books/content?id=rbQ4MAEACAAJ&printsec=frontcover&img=1&zoom=3&source=gbs_api'
+                        }
+                    },
+                    upsert: true // Insert if it doesn't exist
+                }
+            };
         });
-}
+
+        // Execute bulk write
+        await Book.bulkWrite(bulkOperations, { session });
+
+        // Retrieve the updated/inserted books from the database
+        const updatedBooks = await Book.find({
+            _id: { $in: data.items.map(book => book.id) }
+        });
+
+        await session.commitTransaction();
+
+        // Return the updated/inserted books as the response
+        res.status(200).send(updatedBooks);
+
+    } catch (error) {
+        await session.abortTransaction();
+        res.status(500).json({ message: error.message });
+    } finally {
+        if (session) session.endSession();
+    }
+};
