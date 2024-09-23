@@ -3,8 +3,6 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const authenticateToken = async (req, res, next) => {
-  //const token = req.header("Authorization")?.split(" ")[1];
-
   const token = req.cookies.jwt;
   if (token) {
     try {
@@ -12,10 +10,10 @@ const authenticateToken = async (req, res, next) => {
       req.user = decoded;
       next();
     } catch (err) {
-      res.status(403).json({ error: error.message });
+      res.status(403).json({ message: "Unauthorized!" });
     }
   } else {
-    return res.status(401).json({ message: "No token, authorization denied" });
+    return res.status(401).json({ message: "Log in First!" });
   }
 };
 
@@ -24,7 +22,7 @@ const authorizeRoles = (...roles) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         message:
-          "You're ${req.user.role}. You do not have access to this resource",
+          `You're ${req.user.role}. You do not have access to this resource`,
       });
     }
     next();
@@ -35,35 +33,3 @@ module.exports = {
   authenticateToken,
   authorizeRoles,
 };
-
-/*const jwt = require("jsonwebtoken");
-require("dotenv").config();
-
-const authorize = (roles = []) => {
-  if (typeof roles === "string") {
-    roles = [roles];
-  }
-
-  return (req, res, next) => {
-    const token = req.headers["authorization"]?.split(" ")[1];
-
-    if (!token) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
-
-      if (roles.length && !roles.includes(req.user.role)) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-
-      next();
-    } catch (err) {
-      return res.status(401).json({ message: "Invalid Token" });
-    }
-  };
-};
-
-module.exports = authorize;*/

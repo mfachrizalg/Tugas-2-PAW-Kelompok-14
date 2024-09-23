@@ -13,15 +13,12 @@ app.use(morgan("dev"))
 connectDB();
 
 
-
+app.use('/auth', require('./src/routers/authRouter'))
 app.use('/book', require('./src/routers/bookRouter'))
 app.use('/feedback', require('./src/routers/feedbackRouter'))
 app.use('/list', require('./src/routers/listRouter'))
 app.use('/progress', require('./src/routers/progressRouter'))
-// Anggito
-app.use("/api/auth", require("./src/routers/authRouter"));
-app.use("/api/admin", require("./src/routers/adminRoutes"));
-app.use("/api/user", require("./src/routers/userRouter"));
+app.use("/user", require("./src/routers/userRouter"));
 
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
