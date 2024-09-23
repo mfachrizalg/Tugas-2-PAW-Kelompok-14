@@ -13,6 +13,7 @@ connectDB();
 app.use('/book', require('./src/routers/bookRouter'))
 app.use('/feedback', require('./src/routers/feedbackRouter'))
 app.use('/list', require('./src/routers/listRouter'))
+app.use('/progress', require('./src/routers/progressRouter'))
 
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
