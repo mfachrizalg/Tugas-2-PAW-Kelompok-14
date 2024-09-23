@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const ProgressSchema = new mongoose.Schema({
+    userId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : 'User'
+    },
     bookId : {
         type : mongoose.Schema.Types.String,
         ref : 'Book'
@@ -8,6 +12,10 @@ const ProgressSchema = new mongoose.Schema({
     page : {
         type : Number,
         required : true
+    },
+    status : {
+        type : String,
+        enum : ['Reading', 'Finished']
     }
 },
 {

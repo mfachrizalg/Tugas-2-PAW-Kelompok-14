@@ -1,16 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const {
-    getProgress,
-    addProgress,
-    updateProgress
+    getAllProgress,
+    addProgress
 } = require("../controllers/progressController");
+const {
+    authenticateToken,
+    authorizeRoles
+} = require("../middlewares/authorize");
 
 router.route('/')
-    .post(addProgress)
+    .get(authenticateToken,getAllProgress)
 
-router.route('/:id')
-    .patch(updateProgress)
-    .get(getProgress)
+router.route('/:bookId')
+    .post(authenticateToken,addProgress)
 
 module.exports = router;
