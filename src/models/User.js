@@ -5,12 +5,19 @@ const UserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    trim : true,
+    validate : {
+      validator : (value) => {
+        const re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+        return value.match(re)
+      },
+      message : 'Please enter a valid email address'
+    }
   },
   password: {
     type: String,
@@ -18,10 +25,8 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin"],
     default: "user",
   },
-
   listId: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -34,6 +39,12 @@ const UserSchema = new mongoose.Schema({
       ref: "Progress",
     },
   ],
+  bookmarks : [
+    {
+      type : mongoose.Schema.Types.String,
+      ref : 'Book'
+    }
+  ]
 });
 
 // Hash password before saving user to DB

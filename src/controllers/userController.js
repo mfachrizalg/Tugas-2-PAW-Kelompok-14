@@ -1,24 +1,8 @@
-// /controllers/userController.js
-const User = require("../models/User"); // Import the User model
-
-// Controller to get all users (admin only)
-const getAllUsers = async (req, res) => {
-  try {
-    // Ensure the request is coming from an admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied: Admins only." });
-    }
-
-    // Fetch all users from the database
-    const users = await User.find({}, "-password"); // Exclude the password field
-    res.status(200).json(users);
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
+const User = require("../models/User");
+const Book = require("../models/Book");
 
 // menambahkan buku yang ada di db buku ke dalam database bookmark
-const addBookmark = async (req, res) => {
+exports.addBookmark = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(req.user.id);
@@ -30,16 +14,39 @@ const addBookmark = async (req, res) => {
     if (isBookmarked) {
       return res.status(400).json({ message: "Book already bookmarked" });
     }
-    user.bookmarks.push(book);
+    user.bookmarks.push(book._id);
     await user.save();
     res.status(201).json({ message: "Bookmarked successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json(err.message);
   }
 };
 
-module.exports = { getAllUsers, addBookmark };
+exports.getAllBookmark = async (req, res) => { 
+  try {
+    const {bookmarks} = await User.findById(req.user.id).populate("bookmarks").select("bookmarks -_id").lean();
+    res.status(200).json(bookmarks);
+  }
+  catch (error) {
+    res.status(500).json(error.message);
+  }
+}
 
-exports.getUserContent = (req, res) => {
-  res.json({ message: `Welcome ${req.user.username}!` });
-};
+exports.deleteBookmark = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const book = await Book.findById(id).select("-__v").lean();
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+    await User.findByIdAndUpdate (
+      req.user.id,
+      { $pull: { bookmarks: id } },
+      { new: true }
+    );
+    res.status(200).json({ message: "Bookmark deleted successfully" });
+  }
+  catch (error) {
+    res.status(500).json(error.message);
+  }
+}
