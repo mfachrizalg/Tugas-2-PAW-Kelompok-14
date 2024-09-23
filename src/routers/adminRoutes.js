@@ -3,6 +3,7 @@ const {
   authenticateToken,
   authorizeRoles,
 } = require("../middleware/authorize");
+const { getAllUsers } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -16,4 +17,10 @@ router.get(
   }
 );
 
+router.get(
+  "/userList",
+  authenticateToken,
+  authorizeRoles("admin"),
+  getAllUsers
+);
 module.exports = router;

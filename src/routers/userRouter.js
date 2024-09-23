@@ -10,19 +10,21 @@ const router = express.Router();
 // Rute ini bisa diakses oleh user dan admin
 router.get("/dashboard", authenticateToken, (req, res) => {
   if (req.user.role === "admin") {
-    res.status(200).json({ message: "Welcome Admin" });
+    res.status(200).json({ message: `Welcome Admin ${req.user.username}` });
   } else {
-    res.status(200).json({ message: "Welcome User" });
+    res.status(200).json({ message: `Welcome User ${req.user.username}` });
   }
 });
 
-// Rute ini bisa diakses oleh admin
-router.get(
-  "/admin-data",
+// Rute Bookmark Buku (User) dengan parameter id buku
+router.post(
+  "/bookmark/:id",
   authenticateToken,
-  authorizeRoles("admin"),
+  authorizeRoles("user"),
   (req, res) => {
-    res.status(200).json({ message: "This is admin data" });
+    const { id } = req.params;
+    res.status(200).json({ message: `Bookmark buku dengan id ${id}` });
   }
 );
+
 module.exports = router;
