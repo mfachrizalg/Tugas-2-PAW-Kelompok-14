@@ -40,9 +40,46 @@ const deleteList = async (req, res) => {
     }
 }
 
+const addBookToList = async (req, res) => {
+    try {
+        const { listId, bookId } = req.body;
+        const list = await List.findById(listId);
+
+        if (!list.bookId.includes(bookId)) {
+            list.bookId.push(bookId);
+            await list.save();
+            res.status(200).json(list);
+        } else {
+            res.status(400).send('Book already in list');
+        }
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+};
+
+const deleteBookFromList = async (req, res) => {
+    try {
+        const { listId, bookId } = req.body;
+        const list = await List.findById(listId);
+
+        const bookIndex = list.bookId.indexOf(bookId);
+        if (bookIndex > -1) {
+            list.bookId.splice(bookIndex, 1);
+            await list.save();
+            res.status(200).send('Book deleted successfully from list');
+        } else {
+            res.status(400).send('Book not found in list');
+        }
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+};
+
 module.exports = {
     getAllList,
     postList,
     updateList,
-    deleteList
+    deleteList,
+    addBookToList,
+    deleteBookFromList
 }
