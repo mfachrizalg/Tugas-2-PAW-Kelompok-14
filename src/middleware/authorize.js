@@ -2,28 +2,30 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const authenticateToken = (req, res, next) => {
-  const token = req.header("Authorization")?.split(" ")[1];
+const authenticateToken = async (req, res, next) => {
+  //const token = req.header("Authorization")?.split(" ")[1];
 
-  if (!token) {
+  const token = req.cookies.jwt;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+      next();
+    } catch (err) {
+      res.status(403).json({ error: error.message });
+    }
+  } else {
     return res.status(401).json({ message: "No token, authorization denied" });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    res.status(403).json({ message: "Token is not valid" });
   }
 };
 
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res
-        .status(403)
-        .json({ message: "You do not have access to this resource" });
+      return res.status(403).json({
+        message:
+          "You're ${req.user.role}. You do not have access to this resource",
+      });
     }
     next();
   };

@@ -13,7 +13,13 @@ router.get(
   authenticateToken,
   authorizeRoles("admin"),
   (req, res) => {
-    res.status(200).json({ message: "This is admin data" });
+    res.status(200).json({
+      message: "This is admin data",
+      id: req.user.id,
+      username: req.user.username,
+      email: req.user.email,
+      role: req.user.role,
+    });
   }
 );
 
