@@ -1,4 +1,5 @@
 // /controllers/userController.js
+const User = require("../models/User"); // Import the User model
 
 // Controller to get all users (admin only)
 const getAllUsers = async (req, res) => {
