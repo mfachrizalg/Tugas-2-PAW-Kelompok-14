@@ -4,12 +4,16 @@ const {
     updateFeedback,
     deleteFeedbackById
 } = require('../controllers/feedbackController');
+const {
+    authenticateToken,
+    authorizeRoles
+} = require('../middlewares/authorize');
 const express = require('express');
 const router = express.Router();
 
 router.route('/')
     .get(getFeedbackbyBook)
-    .post(addFeedback)
+    .post(authenticateToken, addFeedback)
 
 router.route('/:id')
     .patch(updateFeedback)
