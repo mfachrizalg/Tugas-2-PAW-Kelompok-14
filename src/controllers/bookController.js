@@ -20,7 +20,8 @@ exports.getBooks = async (req, res) => {
                             publisher: book.volumeInfo.publisher || ' ',
                             publishedDate: book.volumeInfo.publishedDate || ' ',
                             description: book.volumeInfo.description || ' ',
-                            image: book.volumeInfo.imageLinks?.thumbnail || 'http://books.google.com/books/content?id=rbQ4MAEACAAJ&printsec=frontcover&img=1&zoom=3&source=gbs_api'
+                            image: book.volumeInfo.imageLinks?.thumbnail || 'http://books.google.com/books/content?id=rbQ4MAEACAAJ&printsec=frontcover&img=1&zoom=3&source=gbs_api',
+                            page : book.volumeInfo.pageCount || 0
                         }
                     },
                     upsert: true
