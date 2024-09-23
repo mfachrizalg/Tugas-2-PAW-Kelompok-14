@@ -2,12 +2,14 @@ const { connectDB } = require("./src/configs/db");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
+const morgan = require("morgan");
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(morgan("dev"))
 connectDB();
 
 
