@@ -15,9 +15,9 @@ exports.getFeedbackbyBook = async (req, res) => {
 // logic untuk menambahkan feedback (butuh autorisasi)
 exports.addFeedback = async (req, res) => {
     const { bookId } = req.query;
-    const { feedback, userId } = req.body;
+    const { feedback, rating } = req.body;
     try {
-        const newFeedback = new Feedback({ feedback, userId, bookId });
+        const newFeedback = new Feedback({ feedback, userId : req.user.id, bookId, rating });
         const saveFeedback = await newFeedback.save();
         if (!saveFeedback) res.status(400).json({ message: 'Failed to add feedback' });
 
@@ -29,10 +29,14 @@ exports.addFeedback = async (req, res) => {
 
 // logic untuk mengupdate feedback (butuh autorisasi)
 exports.updateFeedback = async (req, res) => {
+    const updateBody = {};
     const { id } = req.params;
-    const { feedback } = req.body;
+    const { feedback, rating } = req.body;
+    if (!feedback && !rating) return res.status(400).json({ message: 'Feedback or rating is required' });
+    if (feedback) updateBody.feedback = feedback;
+    if (rating) updateBody.rating = rating;
     try {
-        await Feedback.findByIdAndUpdate(id, { feedback });
+        await Feedback.findByIdAndUpdate(id, updateBody);
 
         res.status(200).json({ message: 'Feedback updated successfully' });
     } catch (error) {
