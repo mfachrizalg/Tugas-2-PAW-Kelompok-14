@@ -89,7 +89,6 @@ exports.logout = (req, res) => {
 
 exports.checkCookie = async (req, res) => {
   const cookie = req.cookies
-  console.log(cookie.jwt)
   if (!cookie?.jwt) return res.status(401).json({ message: "Unauthorized" });
   res.status(200).json({ message: "Authorized" });
 }
