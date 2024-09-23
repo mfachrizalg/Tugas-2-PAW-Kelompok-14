@@ -20,11 +20,10 @@ exports.addFeedback = async (req, res) => {
         const newFeedback = new Feedback({ feedback, userId : req.user.id, bookId, rating });
         const saveFeedback = await newFeedback.save();
         if (!saveFeedback) res.status(400).json({ message: 'Failed to add feedback' });
-
         res.status(200).send(newFeedback);
     } catch (error) {
         res.status(500).json({ message: error.message });
-    } 
+    }
 }
 
 // logic untuk mengupdate feedback (butuh autorisasi)
@@ -43,3 +42,19 @@ exports.updateFeedback = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+// logic untuk menghapus feedback (butuh autorisasi)
+exports.deleteFeedbackById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const feedback = await Feedback.findByIdAndDelete(id);
+
+        if (!feedback) {
+            return res.status(404).json({ message: 'Feedback not found' });
+        }
+
+        res.status(200).json({ message: 'Feedback deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

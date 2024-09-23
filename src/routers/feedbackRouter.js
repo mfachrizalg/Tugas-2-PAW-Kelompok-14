@@ -1,7 +1,8 @@
 const {
     getFeedbackbyBook,
     addFeedback,
-    updateFeedback
+    updateFeedback,
+    deleteFeedbackById
 } = require('../controllers/feedbackController');
 const {
     authenticateToken,
@@ -15,6 +16,7 @@ router.route('/')
     .post(authenticateToken, addFeedback)
 
 router.route('/:id')
-    .patch(authenticateToken, updateFeedback)
+    .patch(updateFeedback)
+    .delete(deleteFeedbackById);
 
 module.exports = router;
