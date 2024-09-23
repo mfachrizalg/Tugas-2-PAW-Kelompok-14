@@ -9,4 +9,8 @@ router.route("/")
     .patch(listController.updateList)
     .delete(listController.deleteList)
 
+router.route("/:listId/books")
+    .post(listController.addBookToList)
+    .delete(listController.deleteBookFromList)
+
 module.exports = router;
