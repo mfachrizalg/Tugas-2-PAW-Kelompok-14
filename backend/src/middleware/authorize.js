@@ -3,16 +3,19 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const authenticateToken = async (req, res, next) => {
-  //const token = req.header("Authorization")?.split(" ")[1];
+  const Bearertoken = req.header("Authorization")?.split(" ")[1];
 
-  const token = req.cookies.jwt;
-  if (token) {
+  let token = req.cookies.jwt;
+  if (token || Bearertoken) {
     try {
+      if (Bearertoken) {
+        token = Bearertoken;
+      }
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
       next();
     } catch (err) {
-      res.status(403).json({ error: error.message });
+      res.status(410).json({ error: err.message });
     }
   } else {
     return res.status(401).json({ message: "No token, authorization denied" });
@@ -23,8 +26,7 @@ const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
-        message:
-          "You're ${req.user.role}. You do not have access to this resource",
+        message: `You're ${req.user.role}. You do not have access to this resource`,
       });
     }
     next();
