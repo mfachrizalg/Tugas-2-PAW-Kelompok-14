@@ -5,9 +5,11 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import CSS Toastify
+import { userAgent } from "next/server";
 import Link from "next/link";
 
 export default function Login() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,8 +19,9 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3000/auth/login",
+        "http://localhost:3000/auth/register",
         {
+          username,
           email,
           password,
         },
@@ -31,20 +34,19 @@ export default function Login() {
       }
       console.log(response.data);
       // Save token to localStorage or cookies (depending on your preference)
-      localStorage.setItem("token", token);
-      localStorage.setItem("roles", roles); // Simpan role pengguna
-      toast.success("Login Success, Redirect to Home", {
+      toast.info("Register Success", {
         position: "top-center",
         autoClose: 2000,
         onClose: () => {
-          // Redirect to a protected page after login
-          router.push("/home");
+          // Setelah toast ditutup, lakukan router.push
+          router.push("/login");
         },
       });
+      // Redirect to a protected page after login
     } catch (err) {
-      toast.info("Login failed. Please check your credentials", {
+      toast.info(err.message, {
         position: "top-center",
-        autoClose: 5000,
+        autoClose: 2500,
       });
     }
   };
@@ -58,8 +60,21 @@ export default function Login() {
           className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm"
         >
           <h2 className="text-2xl font-bold mb-6 text-center text-black">
-            Login
+            Register
           </h2>
+          <div className="mb-4">
+            <label htmlFor="username" className="block text-gray-700">
+              Username
+            </label>
+            <input
+              id="username"
+              type=""
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 text-gray-950"
+              required
+            />
+          </div>
           <div className="mb-4">
             <label htmlFor="email" className="block text-gray-700">
               Email
@@ -92,14 +107,13 @@ export default function Login() {
             className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
             onClick={handleLogin}
           >
-            Login
+            Register
           </button>
-          <p className="mt-2 text-gray-700 text-center">
-            Don't have an account?{" "}
-            <Link href="/register" legacyBehavior>
-              <a className="text-blue-600 hover:underline">Register</a>
-            </Link>
-          </p>
+          <Link href="/login" legacyBehavior>
+            <a className="text-blue-600 hover:underline text-center block mx-auto">
+              Back
+            </a>
+          </Link>
         </form>
       </div>
       <ToastContainer />

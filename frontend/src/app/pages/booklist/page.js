@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Header from "../../components/Header";
+import axios from "axios";
 
 export default function Books() {
   const [books, setBooks] = useState([]);
@@ -60,6 +62,7 @@ export default function Books() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
+      <Header />
       <h1 className="text-3xl font-bold mb-6 text-black">Books List</h1>
 
       <div className="flex justify-between mb-4">
