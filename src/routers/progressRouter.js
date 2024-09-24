@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const {
     getAllProgress,
-    addProgress
+    addProgress,
+    deleteProgress
 } = require("../controllers/progressController");
 const {
     authenticateToken,
@@ -14,5 +15,6 @@ router.route('/')
 
 router.route('/:bookId')
     .post(authenticateToken,addProgress)
+    .delete(authenticateToken, deleteProgress);
 
 module.exports = router;
