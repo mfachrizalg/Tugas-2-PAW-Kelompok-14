@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
 import axios from "axios";
+import Image from "next/image";
 
 export default function Books() {
   const [books, setBooks] = useState([]); // Untuk menyimpan data progress
@@ -29,11 +30,11 @@ export default function Books() {
 
         if (progressResponse.ok) {
           const progressData = await progressResponse.json();
-          setBooks(progressData.reading);
-          setFilteredBooks(progressData.reading);
+          setBooks(progressData);
+          setFilteredBooks(progressData);
 
-          // Ambil detail buku satu per satu berdasarkan bookId
-          progressData.reading.forEach(async (reading) => {
+          // Use Promise.all to fetch book details concurrently
+          const bookDetailsPromises = progressData.map(async (reading) => {
             try {
               const bookDetailsResponse = await axios.get(
                 `http://localhost:3000/book/${reading.bookId}`,
@@ -43,19 +44,27 @@ export default function Books() {
                   },
                 }
               );
-
-              // Simpan detail buku dalam objek bookDetails
-              setBookDetails((prevBookDetails) => ({
-                ...prevBookDetails,
-                [reading._id]: bookDetailsResponse.data,
-              }));
+              return { id: reading._id, details: bookDetailsResponse.data };
             } catch (error) {
               console.error(
                 `Error fetching book details for ID ${reading._id}:`,
                 error
               );
+              return { id: reading._id, details: null };
             }
           });
+
+          const bookDetailsArray = await Promise.all(bookDetailsPromises);
+
+          // Update the state with all the fetched book details
+          const bookDetailsObject = bookDetailsArray.reduce((acc, curr) => {
+            if (curr.details) {
+              acc[curr.id] = curr.details;
+            }
+            return acc;
+          }, {});
+
+          setBookDetails(bookDetailsObject);
         } else if (progressResponse.status === 401) {
           router.push("/login");
         }
@@ -144,26 +153,39 @@ export default function Books() {
         </div>
       </div>
 
-      <ul className="space-y-4">
-        {filteredBooks.map((reading) => (
-          <li
-            key={reading._id}
-            className="bg-white p-4 rounded-lg shadow-md text-black"
-          >
-            <h2 className="text-xl font-bold text-black">
-              {/* Tampilkan judul buku berdasarkan bookId */}
-              {bookDetails[reading._id]?.title || "Loading..."}
-            </h2>
-            <p className="text-black">Page: {reading.page}</p>
-            <p
-              className={`inline-block px-3 py-1 text-black ${
-                reading.status === "Reading" ? "bg-blue-200" : "bg-green-200"
-              } rounded-lg`}
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.isArray(filteredBooks) && filteredBooks.length > 0 ? (
+          filteredBooks.map((reading) => (
+            <li
+              key={reading._id}
+              className="bg-white p-4 rounded-lg shadow-md text-black"
             >
-              Status: {reading.status}
-            </p>
-          </li>
-        ))}
+              <Image
+                src={bookDetails[reading._id]?.image} // Ensure this matches your API response field
+                alt={bookDetails[reading._id]?.title}
+                className="mb-4 w-full h-50 object-cover"
+                width={256}
+                height={50}
+              />
+              <h2 className="text-xl font-bold text-black">
+                {/* Tampilkan judul buku berdasarkan bookId */}
+                {bookDetails[reading._id]?.title || "Loading..."}
+              </h2>
+              <p className="text-black">Page: {reading.page}</p>
+              <p
+                className={`inline-block px-3 py-1 text-black ${
+                  reading.status === "Reading" ? "bg-blue-200" : "bg-green-200"
+                } rounded-lg`}
+              >
+                Status: {reading.status}
+              </p>
+            </li>
+          ))
+        ) : (
+          <li className="text-black">No books available.</li> // Fallback message
+        )}
+
+        {}
       </ul>
     </div>
   );

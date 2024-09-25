@@ -6,9 +6,9 @@ require("dotenv").config();
 exports.register = async (req, res) => {
   try {
     //GET DATA FROM REQUEST
-    const { username, email, password, role } = req.body;
+    const { username, email, password } = req.body;
     //CREATE NEW USER
-    const user = new User({ username, email, password, role });
+    const user = new User({ username, email, password });
     //CONFIRM DATA
     if (!username || !email || !password) {
       return res.status(400).json({ error: "All fields required" });
@@ -16,7 +16,7 @@ exports.register = async (req, res) => {
     //CHECK DUPLICATE EMAIL
     const duplicate = await User.findOne({ email });
     if (duplicate) {
-      return res.status(409).json({ message: "User already exists" });
+      return res.status(409).json({ error: "User already exists" });
     }
     //HASHING PASSWORD
     await user.save();
@@ -28,7 +28,7 @@ exports.register = async (req, res) => {
       role: user.role,
     });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json(err.message);
   }
 };
 
@@ -58,9 +58,8 @@ exports.login = async (req, res) => {
     );
     // Set cookie
     res.cookie("jwt", token, {
-      httpOnly: false, //ga baik tpi gpp
-      secure: true,
-      sameSite: "None",
+      httpOnly: true,
+      sameSite: "lax",
       //batas cookie 1 hour
       maxAge: 1 * 60 * 60 * 1000,
     });
@@ -74,15 +73,20 @@ exports.login = async (req, res) => {
     });
     return token;
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
 exports.logout = (req, res) => {
   // Clear cookie
-  res.cookie("jwt", "", {
-    httyOnly: true,
-    expires: new Date(0),
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    sameSite: "lax",
+    //batas cookie 1 hour
   });
   res.status(200).json({ message: "Logged out successfully" });
+};
+
+exports.checkCookie = async (req, res) => {
+  res.json(req.cookies.jwt);
 };

@@ -4,7 +4,7 @@ const listController = require("../controllers/listController");
 const {
   authenticateToken,
   authorizeRoles,
-} = require("../middleware/authorize");
+} = require("../middlewares/authorize");
 
 router
   .route("/")
@@ -13,20 +13,17 @@ router
     authorizeRoles("user", "admin"),
     listController.getAllList
   )
-  .post(
-    authenticateToken,
-    authorizeRoles("user", "admin"),
-    listController.postList
-  )
-  .patch(
-    authenticateToken,
-    authorizeRoles("user", "admin"),
-    listController.updateList
-  )
+  .post(authenticateToken, authorizeRoles("user"), listController.addList)
   .delete(
     authenticateToken,
-    authorizeRoles("user", "admin"),
-    listController.deleteList
+    authorizeRoles("user"),
+    listController.deleteBookFromList
   );
+
+router
+  .route("/:id")
+  .post(authenticateToken, authorizeRoles("user"), listController.addBookToList)
+  .patch(authenticateToken, authorizeRoles("user"), listController.updateList)
+  .delete(authenticateToken, authorizeRoles("user"), listController.deleteList);
 
 module.exports = router;
