@@ -42,3 +42,21 @@ exports.getBooks = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.getAllBooks = async (req, res) => {
+    try {
+        // Mengambil semua buku dari koleksi Book di MongoDB
+        const books = await Book.find();
+
+        // Jika tidak ada buku yang ditemukan, berikan respons 404
+        if (books.length === 0) {
+            return res.status(404).json({ message: 'No books found' });
+        }
+
+        // Jika buku ditemukan, kirimkan dalam respons 200
+        res.status(200).json(books);
+    } catch (error) {
+        // Jika ada kesalahan, berikan respons error 500
+        res.status(500).json({ message: error.message });
+    }
+};

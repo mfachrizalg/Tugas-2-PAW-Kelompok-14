@@ -87,6 +87,25 @@ exports.logout = (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id; // User ID dari JWT Token
+    // Cari dan hapus user
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // Bersihkan cookie setelah akun dihapus
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sameSite: "none",
+    });
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.checkCookie = async (req, res) => {
   const cookie = req.cookies
   if (!cookie?.jwt) return res.status(401).json({ message: "Unauthorized" });

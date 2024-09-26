@@ -41,7 +41,35 @@ const addProgress = async (req, res) => {
     }
 }
 
+// logic to delete progress
+const deleteProgress = async (req, res) => {
+    let session;
+    const { progressId } = req.params;
+    try {
+        const user = await User.findById(req.user.id);
+        session = await mongoose.startSession();
+        session.startTransaction();
+
+        // Cari progress berdasarkan userId dan progressId
+        const progress = await Progress.findOneAndDelete({ userId: user._id, progressId }, { session });
+        if (!progress) return res.status(404).json('Progress not found');
+        
+        // Hapus progress dari array progressId di User
+        user.progressId = user.progressId.filter(id => !id.equals(progress._id));
+        await user.save({ session });
+
+        await session.commitTransaction();
+        res.status(200).json({ message: 'Progress deleted successfully' });
+    } catch (error) {
+        if (session) await session.abortTransaction();
+        res.status(500).json(error.message);
+    } finally {
+        if (session) session.endSession();
+    }
+};
+
 module.exports = {
     getAllProgress,
-    addProgress
-}
+    addProgress,
+    deleteProgress
+};
